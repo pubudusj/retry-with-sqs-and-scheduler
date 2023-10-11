@@ -81,7 +81,17 @@ class SqsControlledRetryStack(Stack):
             id="FailedMessageProcessingLambdaFunction",
             runtime=lambda_.Runtime.PYTHON_3_10,
             handler="index.event_handler",
-            code=lambda_.Code.from_asset("src/failed_message_processing_lambda"),
+            code=lambda_.Code.from_asset(
+                "src/failed_message_processing_lambda",
+                bundling=BundlingOptions(
+                    image=lambda_.Runtime.PYTHON_3_10.bundling_image,
+                    command=[
+                        "bash",
+                        "-c",
+                        "pip install --no-cache -r requirements.txt -t /asset-output && cp -au . /asset-output",
+                    ],
+                ),
+            ),
             timeout=Duration.seconds(10),
             memory_size=128,
             environment={
